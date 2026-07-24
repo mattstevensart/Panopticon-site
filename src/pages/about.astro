@@ -97,26 +97,26 @@ import Layout from '../layouts/Layout.astro';
     <!-- Contact Form -->
     <div class="mt-16 border-t border-p-accent/20 pt-12">
       <div class="max-w-2xl">
-        <h2 class="font-display text-sm tracking-widest text-p-teal mb-2">⚑ TRANSMIT MESSAGE TO FACILITY ADMINISTRATION</h2>
-        <p class="font-comic text-p-dim text-sm mb-8">All transmissions are logged and monitored.</p>
+        <h2 class="font-display text-sm tracking-widest text-p-teal mb-2">CONTACT</h2>
+        <p class="font-comic text-p-dim text-sm mb-8">Have a question or just want to say hi? Send me a message.</p>
 
         <form id="contact-form" class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">DESIGNATION</label>
+              <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">NAME</label>
               <input type="text" name="name" required placeholder="YOUR NAME"
                 class="w-full px-4 py-3 bg-p-root border-2 border-p-dim/30 text-p-text font-ui text-sm tracking-wide outline-none transition-colors focus:border-p-red"
                 style="letter-spacing: 1px;" />
             </div>
             <div>
-              <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">FREQUENCY</label>
+              <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">EMAIL</label>
               <input type="email" name="email" required placeholder="YOUR EMAIL"
                 class="w-full px-4 py-3 bg-p-root border-2 border-p-dim/30 text-p-text font-ui text-sm tracking-wide outline-none transition-colors focus:border-p-red"
                 style="letter-spacing: 1px;" />
             </div>
           </div>
           <div>
-            <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">TRANSMISSION</label>
+            <label class="block font-ui text-p-dim text-xs tracking-widest mb-2">MESSAGE</label>
             <textarea name="message" required rows="5" placeholder="ENTER YOUR MESSAGE"
               class="w-full px-4 py-3 bg-p-root border-2 border-p-dim/30 text-p-text font-ui text-sm tracking-wide outline-none transition-colors focus:border-p-red resize-none"
               style="letter-spacing: 1px;"></textarea>
@@ -125,7 +125,7 @@ import Layout from '../layouts/Layout.astro';
             <button type="submit" id="contact-submit"
               class="px-6 py-3 bg-p-red border-2 border-p-red font-ui text-sm font-bold tracking-widest cursor-pointer transition-all hover:bg-transparent hover:text-p-red"
               style="color: rgb(10, 10, 15);">
-              TRANSMIT →
+              SEND MESSAGE →
             </button>
             <span id="contact-status" class="font-ui text-sm tracking-wide" style="display: none;"></span>
           </div>
@@ -143,7 +143,7 @@ import Layout from '../layouts/Layout.astro';
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     submitBtn.disabled = true;
-    submitBtn.textContent = 'TRANSMITTING...';
+    submitBtn.textContent = 'SENDING...';
     status.style.display = 'none';
 
     const formData = new FormData(form);
@@ -158,7 +158,7 @@ import Layout from '../layouts/Layout.astro';
       });
 
       if (resp.ok) {
-        status.textContent = 'TRANSMISSION RECEIVED. MESSAGE LOGGED.';
+        status.textContent = 'Message sent! I\'ll get back to you soon.';
         status.style.color = 'rgb(26, 224, 194)';
         status.style.display = 'inline';
         form.reset();
@@ -166,12 +166,12 @@ import Layout from '../layouts/Layout.astro';
         throw new Error('Failed');
       }
     } catch(err) {
-      status.textContent = 'TRANSMISSION FAILED. TRY AGAIN.';
+      status.textContent = 'Something went wrong. Please try again.';
       status.style.color = 'rgb(230, 38, 26)';
       status.style.display = 'inline';
     }
 
     submitBtn.disabled = false;
-    submitBtn.textContent = 'TRANSMIT →';
+    submitBtn.textContent = 'SEND MESSAGE →';
   });
 </script>
