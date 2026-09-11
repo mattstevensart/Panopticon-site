@@ -6,3 +6,4 @@ npm-debug.log*
 .env.production
 .DS_Store
 .astro/
+._*

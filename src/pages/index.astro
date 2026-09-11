@@ -65,8 +65,11 @@ import Layout from '../layouts/Layout.astro';
           <a href="https://www.amazon.com/Panopticon-1-Mr-Matt-Stevens/dp/B0HGNPPV7M/"
              target="_blank"
              rel="noopener"
-             class="btn-gloss btn-gloss--amazon text-sm md:text-base">
-            BUY ON AMAZON →
+             class="btn-gloss btn-gloss--amazon text-sm md:text-base"
+             aria-label="Buy on Amazon">
+            <span>BUY ON</span>
+            <img src="/images/logos/amazon-logo-white.png" alt="Amazon" class="btn-logo btn-logo--amazon" />
+            <span aria-hidden="true">→</span>
           </a>
         </div>
       </div>

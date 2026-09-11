@@ -178,6 +178,15 @@ body {
 }
 .btn-logo--macroverse  { height: 2.05em; }
 .btn-logo--globalcomix { height: 1.5em; }
+.btn-logo--amazon      { height: 1.35em; margin-block: -0.2em; transform: translateY(0.18em); }
+
+/* a logo sitting inside a line of text */
+.inline-logo {
+  display: inline;
+  width: auto;
+  height: 1.2em;
+  vertical-align: -0.38em;
+}
 
 .btn-gloss:focus-visible {
   outline: 2px solid #fff;
@@ -187,7 +196,10 @@ body {
 .btn-gloss--amazon {
   --btn-hi: #ffd48a; --btn-base: #ff9900; --btn-lo: #c96f00; --btn-edge: #7d4400;
   --btn-glow: 255, 153, 0;
+  --btn-ink: #ffffff;
+  --btn-ink-shadow: 0 1px 2px rgba(80, 35, 0, 0.65);
 }
+.btn-gloss--amazon .btn-logo { filter: drop-shadow(0 1px 1.5px rgba(80, 35, 0, 0.6)); }
 .btn-gloss--teal {
   --btn-hi: #a6fff1; --btn-base: #1ae0c2; --btn-lo: #0a9884; --btn-edge: #04594d;
   --btn-glow: 26, 224, 194;
