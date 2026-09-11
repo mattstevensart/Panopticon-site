@@ -167,6 +167,18 @@ body {
     0 0 16px -4px rgba(var(--btn-glow), 0.6);
 }
 
+/* partner logos inside a button, e.g. READ ON [logo] */
+.btn-gloss { gap: 0.55em; }
+.btn-logo {
+  display: block;
+  flex: none;
+  width: auto;
+  margin-block: -0.45em;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.4));
+}
+.btn-logo--macroverse  { height: 2.05em; }
+.btn-logo--globalcomix { height: 1.5em; }
+
 .btn-gloss:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
