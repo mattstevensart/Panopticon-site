@@ -77,3 +77,130 @@ body {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
 }
+
+/* ── Glossy CTA buttons ─────────────────────────────────────────────
+   Lit from above: bright top rim, glass reflection on the upper half,
+   core shadow along the bottom with a thin line of reflected light,
+   a cast shadow, and a glow in the button's own color.
+   Pick a color with one modifier class, e.g. btn-gloss btn-gloss--teal */
+.btn-gloss {
+  --btn-hi:   #ffd48a;
+  --btn-base: #ff9900;
+  --btn-lo:   #c96f00;
+  --btn-edge: #7d4400;
+  --btn-glow: 255, 153, 0;
+  --btn-ink:  #160c00;
+  --btn-ink-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+  --btn-glow-a: 0.45;
+  --btn-sheen-a: 0.6;
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 0.85rem 2.2rem;
+  border: 1px solid var(--btn-edge);
+  border-radius: 9999px;
+  background: linear-gradient(180deg, var(--btn-hi) 0%, var(--btn-base) 46%, var(--btn-lo) 100%);
+  color: var(--btn-ink);
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.12em;
+  line-height: 1.3;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: var(--btn-ink-shadow);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -4px 8px rgba(0, 0, 0, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.28),
+    0 8px 16px -6px rgba(0, 0, 0, 0.8),
+    0 0 24px -2px rgba(var(--btn-glow), var(--btn-glow-a));
+  transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+/* glass reflection across the upper half */
+.btn-gloss::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 2px;
+  left: 7%;
+  right: 7%;
+  height: 46%;
+  border-radius: 9999px 9999px 50% 50% / 9999px 9999px 100% 100%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, var(--btn-sheen-a)), rgba(255, 255, 255, 0.04));
+  pointer-events: none;
+}
+
+/* light sweep on hover */
+.btn-gloss::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: -10%;
+  bottom: -10%;
+  left: -70%;
+  width: 45%;
+  background: linear-gradient(100deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.7s ease;
+}
+
+.btn-gloss:hover {
+  --btn-glow-a: 0.8;
+  transform: translateY(-2px);
+  filter: brightness(1.06) saturate(1.05);
+}
+.btn-gloss:hover::after { left: 135%; }
+
+.btn-gloss:active {
+  transform: translateY(1px);
+  filter: brightness(0.97);
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.2),
+    0 3px 8px -4px rgba(0, 0, 0, 0.8),
+    0 0 16px -4px rgba(var(--btn-glow), 0.6);
+}
+
+.btn-gloss:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.btn-gloss--amazon {
+  --btn-hi: #ffd48a; --btn-base: #ff9900; --btn-lo: #c96f00; --btn-edge: #7d4400;
+  --btn-glow: 255, 153, 0;
+}
+.btn-gloss--teal {
+  --btn-hi: #a6fff1; --btn-base: #1ae0c2; --btn-lo: #0a9884; --btn-edge: #04594d;
+  --btn-glow: 26, 224, 194;
+  --btn-ink: #021c18;
+}
+.btn-gloss--macroverse {
+  --btn-hi: #c7a2ff; --btn-base: #8c40ff; --btn-lo: #5719c4; --btn-edge: #2e0c70;
+  --btn-glow: 140, 64, 255;
+  --btn-ink: #ffffff;
+  --btn-ink-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --btn-sheen-a: 0.35;
+}
+.btn-gloss--globalcomix {
+  --btn-hi: #a3b6ff; --btn-base: #4b6bfb; --btn-lo: #2641c4; --btn-edge: #14256f;
+  --btn-glow: 75, 107, 251;
+  --btn-ink: #ffffff;
+  --btn-ink-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --btn-sheen-a: 0.35;
+}
+
+@media (max-width: 480px) {
+  .btn-gloss { padding: 0.8rem 1.1rem; letter-spacing: 0.06em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-gloss, .btn-gloss::after { transition: none; }
+  .btn-gloss:hover { transform: none; }
+}
