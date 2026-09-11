@@ -51,34 +51,21 @@ import Layout from '../layouts/Layout.astro';
         ))}
       </div>
 
-      <!-- Kickstarter CTA -->
-      <div class="group relative mt-6 flex flex-col items-center gap-4 px-12 py-6 md:px-16 md:py-8 border-2 border-[#05ce78] transition-all duration-300"
-         style="background: rgba(5, 206, 120, 0.06); box-shadow: 0 0 25px 6px rgba(5, 206, 120, 0.2), inset 0 0 25px rgba(5, 206, 120, 0.05); animation: ks-pulse 2.5s ease-in-out infinite;">
-        <img src="/images/kickstarter-logo-white.png" alt="Kickstarter" class="h-6 md:h-8 w-auto opacity-80" />
-        <span class="font-display text-base md:text-xl tracking-widest" style="color: #05ce78;">PANOPTICON VOLUME 1 JUST FUNDED!</span>
-        <a href="https://www.kickstarter.com/projects/panopticoncomic/panopticon-1"
-           target="_blank"
-           class="inline-block px-10 py-3 border-2 border-[#05ce78] rounded-full font-display text-sm md:text-base tracking-widest hover:scale-105 transition-all"
-           style="background: #05ce78; color: rgb(10, 10, 15); text-decoration: none;">
-          CHECK OUT THE CAMPAIGN!
-        </a>
+      <!-- Volume 1 CTA -->
+      <div class="relative mt-6 flex flex-col items-center gap-4 px-8 py-6 md:px-16 md:py-8 border-2 border-p-teal"
+         style="background: rgba(26, 224, 194, 0.06); animation: cta-pulse 2.5s ease-in-out infinite;">
+        <span class="font-display text-base md:text-xl tracking-widest text-p-teal">PANOPTICON VOLUME 1 · AVAILABLE NOW</span>
         <a href="https://www.amazon.com/Panopticon-1-Mr-Matt-Stevens/dp/B0HGNPPV7M/"
            target="_blank"
+           rel="noopener"
            class="inline-block px-10 py-3 border-2 border-[#FF9900] rounded-full font-display text-sm md:text-base tracking-widest hover:scale-105 transition-all"
            style="background: #FF9900; color: rgb(10, 10, 15); text-decoration: none;">
           BUY ON AMAZON →
         </a>
-        <a href="https://embed.macroverse.com/portal/019f24d6-8833-73fa-8ca2-9b989be2a6e4"
-           target="_blank"
-           class="inline-block px-10 py-3 border-2 border-[#8C40FF] rounded-full font-display text-sm md:text-base tracking-widest hover:scale-105 transition-all"
-           style="background: #8C40FF; color: rgb(255, 255, 255); text-decoration: none;">
-          READ ON MACROVERSE →
-        </a>
-        <a href="https://globalcomix.com/c/panopticon/r/3bb570cd-0d54-4e38-8adb-72bd874fb6d8"
-           target="_blank"
-           class="inline-block px-10 py-3 border-2 border-[#4B6BFB] rounded-full font-display text-sm md:text-base tracking-widest hover:scale-105 transition-all"
-           style="background: #4B6BFB; color: rgb(255, 255, 255); text-decoration: none;">
-          READ ON GLOBAL COMIX →
+        <a href="/read"
+           class="inline-block px-10 py-3 border-2 border-p-teal rounded-full font-display text-sm md:text-base tracking-widest text-p-teal hover:bg-p-teal hover:text-p-root hover:scale-105 transition-all"
+           style="text-decoration: none;">
+          START READING →
         </a>
       </div>
 
@@ -134,14 +121,14 @@ import Layout from '../layouts/Layout.astro';
 </Layout>
 
 <style>
-  @keyframes ks-pulse {
+  @keyframes cta-pulse {
     0%, 100% {
-      box-shadow: 0 0 20px 4px rgba(5, 206, 120, 0.15), inset 0 0 20px rgba(5, 206, 120, 0.05);
-      border-color: rgba(5, 206, 120, 0.6);
+      box-shadow: 0 0 20px 4px rgba(26, 224, 194, 0.15), inset 0 0 20px rgba(26, 224, 194, 0.05);
+      border-color: rgba(26, 224, 194, 0.6);
     }
     50% {
-      box-shadow: 0 0 35px 8px rgba(5, 206, 120, 0.35), inset 0 0 30px rgba(5, 206, 120, 0.1);
-      border-color: rgba(5, 206, 120, 1);
+      box-shadow: 0 0 35px 8px rgba(26, 224, 194, 0.35), inset 0 0 30px rgba(26, 224, 194, 0.1);
+      border-color: rgba(26, 224, 194, 1);
     }
   }
 </style>
