@@ -969,15 +969,7 @@ import Layout from '../layouts/Layout.astro';
             startBtn.style.background = 'transparent';
             startBtn.style.boxShadow = 'none';
           });
-          startBtn.addEventListener('click', () => {
-            welcome.style.opacity = '0';
-            welcome.style.transition = 'opacity 0.4s ease';
-            setTimeout(() => {
-              welcome.style.display = 'none';
-              if (creator) creator.style.display = 'block';
-              launchCreator();
-            }, 400);
-          });
+          bindWelcomeStart();
         }
         return;
       }
@@ -985,16 +977,89 @@ import Layout from '../layouts/Layout.astro';
       launchCreator();
     }
 
+    // ── Convention kiosk mode ─────────────────────────────────────
+    // With this on, finishing an avatar returns to the opening screen
+    // ready for the next person, rather than sending them through to the
+    // scanner and the classified files.
+    //
+    // AFTER THE CONVENTION: set this to false to restore the normal flow.
+    const KIOSK_MODE = true;
+
+    // Seconds the confirmation sits before returning on its own. Someone
+    // who walks off shouldn't leave their name up for the next person.
+    // Set to 0 to require a button press.
+    const KIOSK_AUTO_RETURN_SECONDS = 60;
+
+    let kioskTimer = null;
+    let resizeBound = false;
+    // launchCreator() runs again for every visitor in kiosk mode. These
+    // guard the parts of it that attach listeners or start animation
+    // loops — without them, sixty visitors would leave sixty copies of
+    // each click handler and sixty EKG loops running at once.
+    let listenersBound = false;
+    let ekgStarted = false;
+
+    // Binds the opening screen's start button. Uses onclick rather than
+    // addEventListener so calling it repeatedly replaces the handler
+    // instead of stacking copies.
+    function bindWelcomeStart() {
+      const welcome = document.getElementById('welcome-notice');
+      const creator = document.getElementById('avatar-creator-container');
+      const startBtn = document.getElementById('welcome-start-btn');
+      if (!startBtn || !welcome) return;
+      startBtn.onclick = () => {
+        welcome.style.opacity = '0';
+        welcome.style.transition = 'opacity 0.4s ease';
+        setTimeout(() => {
+          welcome.style.display = 'none';
+          welcome.style.opacity = '1';
+          if (creator) creator.style.display = 'block';
+          launchCreator();
+        }, 400);
+      };
+    }
+
+    // Wipe the visitor and go back to the opening screen.
+    function returnToStart() {
+      if (kioskTimer) { clearTimeout(kioskTimer); kioskTimer = null; }
+
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('panopticon_'))
+          .forEach(k => localStorage.removeItem(k));
+      } catch(e) { /* private browsing */ }
+
+      document.getElementById('post-save-box')?.classList.remove('visible');
+      const modal = document.getElementById('email-modal');
+      if (modal) modal.style.display = 'none';
+      resetCreator();
+
+      const creator = document.getElementById('avatar-creator-container');
+      const welcome = document.getElementById('welcome-notice');
+      const returning = document.getElementById('returning-landing');
+      if (creator) creator.style.display = 'none';
+      if (returning) returning.style.display = 'none';
+      if (welcome) {
+        welcome.style.opacity = '1';
+        welcome.style.display = 'flex';
+      }
+      bindWelcomeStart();
+      window.scrollTo(0, 0);
+    }
+
     function launchCreator() {
       buildCategoryList();
       buildMobileCategories();
       initCanvas();
       startIntro();
-      setupEventListeners();
-      setupMobileEvents();
+      if (!listenersBound) {
+        setupEventListeners();
+        setupMobileEvents();
+        listenersBound = true;
+      }
       handleResize();
-      window.addEventListener('resize', handleResize);
-      initEkg();
+      if (!resizeBound) { window.addEventListener('resize', handleResize); resizeBound = true; }
+      if (!ekgStarted) { initEkg(); ekgStarted = true; }
     }
 
     // ── EKG Heartbeat Animation ──
@@ -2356,6 +2421,25 @@ import Layout from '../layouts/Layout.astro';
       const text = document.getElementById('post-save-text');
       text.textContent = `INMATE INTAKE COMPLETE.\nYOU ARE INMATE ${charName.toUpperCase()}. ID #${idCode}.\nWELCOME TO THE PANOPTICON.\nSURVEILLANCE IS MANDATORY.`;
       box.classList.add('visible');
+
+      if (KIOSK_MODE) {
+        // Turn the scanner link into a "next person" reset.
+        const scanBtn = document.getElementById('scan-btn');
+        if (scanBtn) {
+          scanBtn.textContent = 'NEXT INMATE →';
+          scanBtn.removeAttribute('href');
+          scanBtn.style.cursor = 'pointer';
+          scanBtn.onclick = (e) => { e.preventDefault(); returnToStart(); };
+        }
+        if (KIOSK_AUTO_RETURN_SECONDS > 0) {
+          if (kioskTimer) clearTimeout(kioskTimer);
+          kioskTimer = setTimeout(returnToStart, KIOSK_AUTO_RETURN_SECONDS * 1000);
+        }
+        // Deliberately not setting panopticon_avatar_created: it would
+        // make the next person land on "ALREADY PROCESSED".
+        return;
+      }
+
       localStorage.setItem('panopticon_avatar_created', 'true');
 
       // Store full inmate profile for header display
