@@ -1178,7 +1178,13 @@ import Layout from '../layouts/Layout.astro';
         if (availableWidth < targetWidth) {
           const scale = availableWidth / targetWidth;
           viewport.style.transform = `scale(${scale})`;
-          viewport.style.height = (targetHeight * scale) + 'px';
+          // The viewport MUST stay 840px tall. A CSS transform doesn't
+          // affect layout, so the frame below absorbs the visual shrink —
+          // but if we shrink this height too, the inner grid recomputes
+          // against the smaller number while the width stays 1280, and
+          // the canvas comes out wider than it is tall. That was the
+          // horizontal stretch on iPad.
+          viewport.style.height = targetHeight + 'px';
           if (desktopFrame) desktopFrame.style.height = (targetHeight * scale + 64) + 'px';
         } else {
           viewport.style.transform = 'scale(1)';
@@ -1873,6 +1879,14 @@ import Layout from '../layouts/Layout.astro';
         const el = document.getElementById(id);
         if (el) { el.classList.remove('glow-done'); el.textContent = 'EMAIL PNG'; }
       });
+      // Clear the previous visitor entirely. On a shared iPad their name,
+      // ID and avatar would otherwise persist into the next person's
+      // session and surface in the site header.
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('panopticon_'))
+          .forEach(k => localStorage.removeItem(k));
+      } catch(e) { /* private browsing — nothing to clear */ }
       renderCanvas();
       buildCategoryList();
       buildMobileCategories();

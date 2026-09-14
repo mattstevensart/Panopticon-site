@@ -1,0 +1,15 @@
+{
+  "name": "panopticon-send-avatars",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Post-convention: email each visitor the avatar they made at the table.",
+  "scripts": {
+    "dry": "node send-avatars.mjs",
+    "send": "node send-avatars.mjs --send"
+  },
+  "dependencies": {
+    "firebase": "^10.8.0",
+    "nodemailer": "^6.9.13"
+  }
+}
