@@ -217,42 +217,13 @@ function getPhase() {
   return 'ended';
 }
 
-// DB
-let db = null;
-let useFirebase = false;
-
-async function initDB() {
-  if (CONFIG.firebase.apiKey && CONFIG.firebase.apiKey.length > 5) {
-    try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-      const { getFirestore, collection, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-      const app = initializeApp(CONFIG.firebase);
-      db = { fs: getFirestore(app), collection, getDocs, query, where };
-      useFirebase = true;
-      console.log('✅ Firebase connected');
-    } catch(e) { console.warn('Firebase init failed:', e); }
-  }
-}
-
-async function findByEmail(email) {
-  if (!useFirebase || !email) return null;
-  const { collection, getDocs, query, where } = db;
-  const q = query(collection(db.fs, 'earlybird_registrations'), where('email', '==', email.toLowerCase()));
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { id: d.id, ...d.data() };
-}
-
-async function findByToken(token) {
-  if (!useFirebase || !token) return null;
-  const { collection, getDocs, query, where } = db;
-  const q = query(collection(db.fs, 'earlybird_registrations'), where('token', '==', token.toUpperCase()));
-  const snap = await getDocs(q);
-  if (snap.empty) return null;
-  const d = snap.docs[0];
-  return { id: d.id, ...d.data() };
-}
+// The Firestore lookups that used to live here (findByEmail / findByToken)
+// were removed when the database was locked down: a search across the
+// registrations collection can only be allowed for everyone or no one, and
+// allowing it meant every backer's email was publicly downloadable. The
+// Issue 1 campaign closed in June 2026, so this page is now a static recap.
+// A Volume 2 campaign should store each registration under its own token so
+// a backer can fetch their record without the collection being listable.
 
 function tierHTML(tier) {
   const t = CONFIG.tiers[tier] || CONFIG.tiers.supporter;
@@ -276,7 +247,6 @@ function setPhase(msg, color = '#388cff') {
 
 // Init
 (async function init() {
-  await initDB();
   const phase = getPhase();
 
   // Phase UI
@@ -314,45 +284,9 @@ function setPhase(msg, color = '#388cff') {
     return;
   }
 
-  // Check if user is registered — try Firebase first, fall back to localStorage
-  const savedEmail = localStorage.getItem('panopticon_inmate_email') || localStorage.getItem('panopticon_eb_email');
-  const savedToken = localStorage.getItem('panopticon_inmate_tok') || localStorage.getItem('panopticon_eb_token');
-  const avatarThumb = localStorage.getItem('panopticon_avatar_thumb');
-  const inmateName = localStorage.getItem('panopticon_inmate_name');
-  const inmateId = localStorage.getItem('panopticon_inmate_id');
-
-  let reg = null;
-  if (savedEmail) reg = await findByEmail(savedEmail);
-  if (!reg && savedToken) reg = await findByToken(savedToken);
-
-  if (reg) {
-    // Show status
-    document.getElementById('eb-status').style.display = 'block';
-    setPhase('✓ REGISTERED · ' + (CONFIG.tiers[reg.tier]?.label || 'SUPPORTER') + ' TIER', '#1ae0c2');
-
-    if (reg.avatarThumb || avatarThumb) document.getElementById('status-avatar').src = reg.avatarThumb || avatarThumb;
-    document.getElementById('status-name').textContent = reg.name || inmateName || '—';
-    document.getElementById('status-id').textContent = reg.inmateId ? '#' + reg.inmateId : '';
-    document.getElementById('status-token').textContent = reg.token || savedToken || '—';
-    document.getElementById('status-tier').innerHTML = tierHTML(reg.tier);
-
-    if (reg.pledgeVerified) {
-      document.getElementById('status-pledge').innerHTML = '<span style="color:#1ae0c2;">✓ VERIFIED</span>';
-      document.getElementById('status-lottery').innerHTML = '<span style="color:#8c40ff;">★ ENTERED</span>';
-      document.getElementById('verify-cta').textContent = 'VIEW STATUS →';
-    } else {
-      document.getElementById('status-pledge').innerHTML = '<span style="color:#5c576f;">PENDING</span>';
-      document.getElementById('status-lottery').innerHTML = '<span style="color:#5c576f;">VERIFY TO ENTER</span>';
-    }
-
-    document.getElementById('copy-token')?.addEventListener('click', () => {
-      navigator.clipboard.writeText(reg.token || savedToken || '');
-      document.getElementById('copy-token').textContent = '✓ COPIED';
-      setTimeout(() => { document.getElementById('copy-token').textContent = 'COPY TOKEN'; }, 2000);
-    });
-  } else {
-    // Not registered — show CTA to create avatar
-    document.getElementById('eb-gate').style.display = 'block';
-  }
+  // Past this point the page used to look up the visitor's registration.
+  // With the lookups gone, anyone arriving before the end date just sees the
+  // call to action to make an avatar.
+  document.getElementById('eb-gate').style.display = 'block';
 })();
 </script>

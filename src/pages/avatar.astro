@@ -150,7 +150,7 @@ import Layout from '../layouts/Layout.astro';
           <button id="reset-btn" class="action-button action-button-reset">RESET</button>
           <button id="name-btn" class="action-button action-button-glow" style="display: none;">NAME INMATE</button>
           <button id="id-btn" class="action-button action-button-glow" style="display: none;">GENERATE ID</button>
-          <button id="save-btn" class="action-button action-button-glow" style="display: none;">SAVE PNG</button>
+          <button id="save-btn" class="action-button action-button-glow" style="display: none;">EMAIL PNG</button>
         </div>
       </div>
       </div><!-- /.concrete-frame desktop -->
@@ -181,7 +181,7 @@ import Layout from '../layouts/Layout.astro';
         <button id="mobile-reset-btn" class="action-button action-button-reset">RESET</button>
         <button id="mobile-name-btn" class="action-button action-button-glow" style="display: none;">NAME INMATE</button>
         <button id="mobile-id-btn" class="action-button action-button-glow" style="display: none;">GENERATE ID</button>
-        <button id="mobile-save-btn" class="action-button action-button-glow" style="display: none;">SAVE PNG</button>
+        <button id="mobile-save-btn" class="action-button action-button-glow" style="display: none;">EMAIL PNG</button>
       </div>
       <!-- Mobile categories (horizontal scroll) -->
       <div id="mobile-categories" style="display: flex; overflow-x: auto; background: rgb(15, 15, 23); border-bottom: 1px solid rgb(56, 140, 255); padding: 4px 0; gap: 0; -webkit-overflow-scrolling: touch;">
@@ -207,23 +207,23 @@ import Layout from '../layouts/Layout.astro';
       </div>
     </div>
 
-    <!-- Email registration modal (appears after PNG save) -->
+    <!-- Email modal (appears when they ask for their ID) -->
     <div id="email-modal" style="display: none; position: fixed; inset: 0; z-index: 2500; background: rgba(10, 10, 15, 0.92); align-items: center; justify-content: center;">
       <div style="width: 480px; max-width: 92vw; background: rgb(23, 23, 33); border: 2px solid rgb(140, 64, 255); padding: 32px 32px 24px; box-shadow: 0 0 40px rgba(140, 64, 255, 0.2), 0 0 80px rgba(140, 64, 255, 0.08);">
-        <div style="color: rgb(140, 64, 255); font-family: 'Orbitron'; font-size: 14px; letter-spacing: 3px; margin-bottom: 12px;">REGISTER YOUR INMATE</div>
+        <div style="color: rgb(140, 64, 255); font-family: 'Orbitron'; font-size: 14px; letter-spacing: 3px; margin-bottom: 12px;">TRANSMIT YOUR ID</div>
         <div style="color: rgb(214, 214, 224); font-family: 'Exo 2', sans-serif; font-size: 14px; line-height: 1.7; margin-bottom: 12px;">
-          Enter your email to lock in your avatar and get included on the <span style="color: rgb(26, 224, 194);">thank you page</span> of the book.
+          Enter your email and we'll send your inmate ID straight to your inbox — plus word when the <span style="color: rgb(26, 224, 194);">next volume</span> drops.
         </div>
         <div style="color: rgb(26, 224, 194); font-family: 'Electrolize'; font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; padding: 8px 12px; border: 1px solid rgba(26, 224, 194, 0.2); background: rgba(26, 224, 194, 0.04);">
-          YOUR EMAIL GETS YOUR AVATAR IN THE PRINTED BOOK + EXTRA LOOT IN YOUR ORDER
+          YOUR ID ARRIVES BY EMAIL — NOTHING TO SAVE ON THIS DEVICE
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <input id="email-input" type="email" placeholder="ENTER EMAIL" style="flex: 1; min-width: 200px; padding: 12px 14px; background: rgb(10, 10, 15); border: 2px solid rgb(92, 87, 111); color: rgb(214, 214, 224); font-family: 'Electrolize'; font-size: 14px; letter-spacing: 1px; outline: none;" />
-          <button id="email-submit-btn" style="padding: 12px 20px; background: rgb(26, 224, 194); border: 2px solid rgb(26, 224, 194); color: rgb(10, 10, 15); font-family: 'Electrolize'; font-size: 14px; font-weight: bold; cursor: pointer; letter-spacing: 1px; white-space: nowrap;">COUNT ME IN →</button>
+          <button id="email-submit-btn" style="padding: 12px 20px; background: rgb(26, 224, 194); border: 2px solid rgb(26, 224, 194); color: rgb(10, 10, 15); font-family: 'Electrolize'; font-size: 14px; font-weight: bold; cursor: pointer; letter-spacing: 1px; white-space: nowrap;">SEND MY ID →</button>
         </div>
         <div id="email-error" style="display: none; color: rgb(230, 38, 26); font-family: 'Electrolize'; font-size: 12px; margin-top: 8px;"></div>
         <div id="email-success" style="display: none; color: rgb(26, 224, 194); font-family: 'Electrolize'; font-size: 13px; margin-top: 12px; line-height: 1.6;"></div>
-        <button id="email-skip-btn" style="display: block; margin-top: 16px; background: none; border: none; color: rgb(92, 87, 111); font-family: 'Electrolize'; font-size: 12px; letter-spacing: 2px; cursor: pointer; padding: 4px 0; transition: color 0.2s;">SKIP FOR NOW</button>
+        <button id="email-download-btn" style="display: block; margin-top: 16px; background: none; border: none; color: rgb(92, 87, 111); font-family: 'Electrolize'; font-size: 12px; letter-spacing: 2px; cursor: pointer; padding: 4px 0; transition: color 0.2s;">OR DOWNLOAD INSTEAD</button>
       </div>
     </div>
 
@@ -822,9 +822,9 @@ import Layout from '../layouts/Layout.astro';
     async function initFirebase() {
       try {
         const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-        const { getFirestore, collection, addDoc, getDocs, query, where } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
+        const { getFirestore, collection, addDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
         const app = initializeApp(FB_CONFIG);
-        fbDb = { fs: getFirestore(app), collection, addDoc, getDocs, query, where };
+        fbDb = { fs: getFirestore(app), collection, addDoc };
         fbReady = true;
         console.log('✅ Firebase connected (avatar)');
       } catch(e) { console.warn('Firebase init failed:', e); }
@@ -845,24 +845,11 @@ import Layout from '../layouts/Layout.astro';
     async function registerInFirebase(email, name, inmateId, token, avatarThumb) {
       if (!fbReady) return;
       try {
-        const { collection, getDocs, query, where, addDoc } = fbDb;
-        const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-        // Check if email exists — update avatar if so, otherwise create new
-        const q = query(collection(fbDb.fs, 'earlybird_registrations'), where('email', '==', email.toLowerCase()));
-        const snap = await getDocs(q);
-        if (!snap.empty) {
-          const existing = snap.docs[0];
-          await updateDoc(doc(fbDb.fs, 'earlybird_registrations', existing.id), {
-            name: name || existing.data().name,
-            inmateId: inmateId || existing.data().inmateId,
-            token: token || existing.data().token,
-            avatarThumb: avatarThumb || existing.data().avatarThumb,
-          });
-          localStorage.setItem('panopticon_eb_token', token || inmateId || '');
-          localStorage.setItem('panopticon_eb_email', email.toLowerCase());
-          console.log('✅ Updated existing registration');
-          return;
-        }
+        // Write-only by design. This used to search the collection for an
+        // existing email and update it, but that search is what let anyone
+        // read every registration. Someone registering twice now creates two
+        // records; the admin export de-duplicates on the way out.
+        const { collection, addDoc } = fbDb;
         await addDoc(collection(fbDb.fs, 'earlybird_registrations'), {
           name: name || '',
           inmateId: inmateId || token || '',
@@ -1858,7 +1845,7 @@ import Layout from '../layouts/Layout.astro';
         if (e.key === 'Enter') confirmName();
       });
       document.getElementById('id-btn').addEventListener('click', generateId);
-      document.getElementById('save-btn').addEventListener('click', savePng);
+      document.getElementById('save-btn').addEventListener('click', startEmailFlow);
     }
 
     function resetCreator() {
@@ -1879,6 +1866,13 @@ import Layout from '../layouts/Layout.astro';
       if (mSaveBtn) mSaveBtn.style.display = 'none';
       document.getElementById('post-save-box').classList.remove('visible');
       document.getElementById('email-modal').style.display = 'none';
+      // Put the action button back the way the next person should find it —
+      // without this it still reads "✓ SENT" from the previous visitor.
+      pngBuildPromise = null;
+      ['save-btn', 'mobile-save-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('glow-done'); el.textContent = 'EMAIL PNG'; }
+      });
       renderCanvas();
       buildCategoryList();
       buildMobileCategories();
@@ -1946,13 +1940,104 @@ import Layout from '../layouts/Layout.astro';
       reader.readAsDataURL(blob);
     }
 
-    async function savePng() {
-      // Stop glow on Save PNG button after click
-      const saveEl = document.getElementById('save-btn');
-      if (saveEl) { saveEl.classList.add('glow-done'); saveEl.textContent = '✓ SAVED'; }
-      const mSaveEl = document.getElementById('mobile-save-btn');
-      if (mSaveEl) { mSaveEl.classList.add('glow-done'); mSaveEl.textContent = '✓ SAVED'; }
+    // ── Avatar delivery ───────────────────────────────────────────
+    // Cloudflare Worker that emails the PNG (source in avatar-mailer/).
+    // Leave as '' until the worker is deployed: the flow then falls back
+    // to a direct download, so the page keeps working in the meantime.
+    const AVATAR_MAILER_URL = '';
 
+    // Set false to drop the quiet "or download instead" escape hatch and
+    // make email the only way out of the modal.
+    const SHOW_DOWNLOAD_FALLBACK = true;
+
+    // The in-flight PNG render, started the moment they hit EMAIL PNG so
+    // it finishes while they're still typing their address.
+    let pngBuildPromise = null;
+
+    function startEmailFlow() {
+      markSaveButtons('PREPARING...', true);
+      pngBuildPromise = buildAvatarPng().catch(err => {
+        console.error('Avatar build failed:', err);
+        return null;
+      });
+      showEmailModal();
+    }
+
+    function markSaveButtons(label, addGlowDone) {
+      ['save-btn', 'mobile-save-btn'].forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        if (addGlowDone) el.classList.add('glow-done');
+        el.textContent = label;
+      });
+    }
+
+    // Hands the PNG to the Worker, which attaches it and sends it on.
+    // Returns false on any failure so the caller can fall back to a save.
+    async function emailAvatar(email, built) {
+      if (!AVATAR_MAILER_URL || !built) return false;
+      try {
+        const resp = await fetch(AVATAR_MAILER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: email,
+            name: built.charName,
+            inmateId: built.idCode,
+            png: built.mediumDataUrl,
+            hp: ''
+          })
+        });
+        if (!resp.ok) console.warn('Mailer returned', resp.status);
+        return resp.ok;
+      } catch(e) {
+        console.warn('Avatar email failed:', e);
+        return false;
+      }
+    }
+
+    // One create, carrying the image and the address it belongs to, so the
+    // post-convention batch send reads a single collection and needs no
+    // matching step. Not awaited — nobody waits on this at the table.
+    async function saveAvatarRecord(built, email) {
+      if (!fbReady || !built) return;
+      try {
+        const { collection, addDoc } = fbDb;
+        await addDoc(collection(fbDb.fs, 'avatar_uploads'), {
+          name: built.charName,
+          inmateId: built.idCode,
+          token: built.token,
+          filename: built.filename,
+          imageData: built.mediumDataUrl,
+          email: (email || '').toLowerCase(),
+          uploadedAt: new Date().toISOString(),
+        });
+        console.log('✅ Avatar saved to Firestore');
+      } catch(e) { console.warn('Avatar save failed (non-critical):', e); }
+    }
+
+    function downloadBuiltPng(built) {
+      if (!built) return;
+      if (window.innerWidth < 768) {
+        // iOS Safari ignores <a download>; open it for a long-press save.
+        mobileFallbackSave(built.blob, built.filename);
+        return;
+      }
+      const url = URL.createObjectURL(built.blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = built.filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    // Renders the full-resolution avatar, encodes the token, stores the
+    // copies the rest of the site expects, and returns the pieces needed
+    // to either email or download it.
+    async function buildAvatarPng() {
       // Store avatar thumbnail EARLY so Firebase registration gets the current one
       try {
         const canvas = document.getElementById('preview-canvas');
@@ -2069,6 +2154,10 @@ import Layout from '../layouts/Layout.astro';
       //     Samsung/mobile browsers that corrupt single-bit LSB values.
       const REDUNDANCY = 5;
       const tok = Array.from({length: 8}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+      // Persist it now: registerInFirebase reads this key, so without it the
+      // registration records the 3-char inmate ID instead and the avatar
+      // can't be matched back to the address it belongs to.
+      try { localStorage.setItem('panopticon_inmate_tok', tok); } catch(e) {}
       const payload = JSON.stringify({
         name: charName,
         id: idCode.toUpperCase(),
@@ -2095,8 +2184,6 @@ import Layout from '../layouts/Layout.astro';
       }
       cctx.putImageData(imgData, 0, 0);
 
-      // Download — try direct download first (preserves PNG losslessly),
-      // fall back to Web Share API, then fallback save
       const blob = await new Promise(resolve => cropped.toBlob(resolve, 'image/png'));
       const safeName = charName.replace(/\s+/g, '_').replace(/[\/:\\]/g, '-');
       const filename = `${safeName}${idCode.toUpperCase()}.png`;
@@ -2108,66 +2195,25 @@ import Layout from '../layouts/Layout.astro';
         reader.readAsDataURL(blob);
       } catch(e) {}
 
-      // Save medium-res avatar to Firestore (no Storage needed — free tier)
-      // 800×800 is plenty for a printed grid in the back of the comic
-      if (fbReady) {
-        (async () => {
-          try {
-            const medCanvas = document.createElement('canvas');
-            medCanvas.width = 800;
-            medCanvas.height = 800;
-            const medCtx = medCanvas.getContext('2d');
-            medCtx.drawImage(cropped, 0, 0, 800, 800);
-            const medDataUrl = medCanvas.toDataURL('image/png');
-            const { collection, addDoc } = fbDb;
-            await addDoc(collection(fbDb.fs, 'avatar_uploads'), {
-              name: charName?.toUpperCase() || '',
-              inmateId: idCode?.toUpperCase() || '',
-              token: tok,
-              filename: filename,
-              imageData: medDataUrl,
-              uploadedAt: new Date().toISOString(),
-            });
-            console.log('✅ Avatar saved to Firestore');
-          } catch(e) { console.warn('Avatar save failed (non-critical):', e); }
-        })();
-      }
+      // 800×800 copy — small enough to attach to an email and to store in
+      // Firestore, still plenty for a printed grid in the back of the book.
+      const medCanvas = document.createElement('canvas');
+      medCanvas.width = 800;
+      medCanvas.height = 800;
+      medCanvas.getContext('2d').drawImage(cropped, 0, 0, 800, 800);
+      const mediumDataUrl = medCanvas.toDataURL('image/png');
 
-      if (isMobile) {
-        // Mobile: try direct <a download> first — most Android browsers support it
-        // and it preserves the PNG losslessly unlike Web Share API
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.style.display = 'none';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        // After a short delay, also offer Web Share as secondary option
-        // (in case <a download> was blocked by the browser)
-        setTimeout(async () => {
-          if (navigator.share && navigator.canShare) {
-            const file = new File([blob], filename, { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-              try {
-                await navigator.share({ files: [file], title: filename });
-              } catch(e) { /* User cancelled — fine */ }
-            }
-          }
-          URL.revokeObjectURL(url);
-        }, 1500);
-      } else {
-        // Desktop: standard download
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        a.click();
-        URL.revokeObjectURL(url);
-      }
-      showEmailModal();
+      // The Firestore write now happens in saveAvatarRecord(), once the
+      // address is known — one create, no update, and nothing stored for
+      // someone who walks away without registering.
+      return {
+        blob,
+        filename,
+        mediumDataUrl,
+        token: tok,
+        charName: charName?.toUpperCase() || '',
+        idCode: idCode?.toUpperCase() || '',
+      };
     }
 
     function showEmailModal() {
@@ -2176,17 +2222,20 @@ import Layout from '../layouts/Layout.astro';
       const submitBtn = document.getElementById('email-submit-btn');
       const errorEl = document.getElementById('email-error');
       const successEl = document.getElementById('email-success');
-      const skipBtn = document.getElementById('email-skip-btn');
+      const downloadBtn = document.getElementById('email-download-btn');
 
       modal.style.display = 'flex';
       input.value = '';
       errorEl.style.display = 'none';
       successEl.style.display = 'none';
       submitBtn.disabled = false;
-      submitBtn.textContent = 'COUNT ME IN →';
+      submitBtn.textContent = 'SEND MY ID →';
       submitBtn.style.display = '';
       input.style.display = '';
-      if (skipBtn) skipBtn.style.display = 'block';
+      if (downloadBtn) {
+        downloadBtn.textContent = 'OR DOWNLOAD INSTEAD';
+        downloadBtn.style.display = SHOW_DOWNLOAD_FALLBACK ? 'block' : 'none';
+      }
 
       // Focus input after animation
       setTimeout(() => input.focus(), 100);
@@ -2198,18 +2247,28 @@ import Layout from '../layouts/Layout.astro';
       input.onfocus = () => { input.style.borderColor = 'rgb(140, 64, 255)'; };
       input.onblur = () => { input.style.borderColor = 'rgb(92, 87, 111)'; };
 
-      // Skip button — show warning first, then allow skip on second click
-      let skipConfirmed = false;
-      if (skipBtn) {
-        skipBtn.onmouseenter = () => { skipBtn.style.color = 'rgb(214, 214, 224)'; };
-        skipBtn.onmouseleave = () => { if (!skipConfirmed) skipBtn.style.color = 'rgb(92, 87, 111)'; };
-        skipBtn.onclick = () => {
-          if (!skipConfirmed) {
-            skipConfirmed = true;
-            skipBtn.textContent = 'SKIP — YOU CAN ALWAYS COME BACK AND ADD IT LATER';
-            skipBtn.style.color = 'rgb(92, 87, 111)';
-            return;
-          }
+      // Ends the modal on the normal post-save screen.
+      const finish = (message) => {
+        successEl.textContent = message;
+        successEl.style.display = 'block';
+        submitBtn.style.display = 'none';
+        input.style.display = 'none';
+        if (downloadBtn) downloadBtn.style.display = 'none';
+        setTimeout(() => {
+          modal.style.display = 'none';
+          showPostSaveMessage();
+        }, 1800);
+      };
+
+      // Escape hatch for a mistyped address or a dead connection at the
+      // table — hands over the PNG without collecting an email.
+      if (downloadBtn) {
+        downloadBtn.onmouseenter = () => { downloadBtn.style.color = 'rgb(214, 214, 224)'; };
+        downloadBtn.onmouseleave = () => { downloadBtn.style.color = 'rgb(92, 87, 111)'; };
+        downloadBtn.onclick = async () => {
+          downloadBtn.textContent = 'PREPARING...';
+          downloadBuiltPng(await pngBuildPromise);
+          markSaveButtons('✓ SAVED', false);
           modal.style.display = 'none';
           showPostSaveMessage();
         };
@@ -2228,12 +2287,18 @@ import Layout from '../layouts/Layout.astro';
         }
 
         submitBtn.disabled = true;
-        submitBtn.textContent = 'JOINING...';
+        submitBtn.textContent = 'TRANSMITTING...';
+        if (downloadBtn) downloadBtn.style.display = 'none';
 
+        // Has been rendering since they pressed EMAIL PNG.
+        const built = await pngBuildPromise;
+
+        // ── Kit (ConvertKit) mailing list ──
+        // Never blocks the avatar from going out — if Kit is down they
+        // still get their ID and we still have them in Firestore.
         try {
-          // ── Kit (ConvertKit) Form Submission ──
           const KIT_FORM_ID = '9266908';
-          const resp = await fetch(`https://api.convertkit.com/v3/forms/${KIT_FORM_ID}/subscribe`, {
+          await fetch(`https://api.convertkit.com/v3/forms/${KIT_FORM_ID}/subscribe`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2245,46 +2310,29 @@ import Layout from '../layouts/Layout.astro';
               }
             })
           });
-
-          if (!resp.ok) throw new Error('Registration failed');
-
-          // Store email locally
-          localStorage.setItem('panopticon_inmate_email', email);
-
-          // Auto-register in Firebase for earlybird campaign
-          const thumbData = localStorage.getItem('panopticon_avatar_thumb') || '';
-          const tokVal = localStorage.getItem('panopticon_inmate_tok') || idCode || '';
-          registerInFirebase(email, charName?.toUpperCase(), idCode?.toUpperCase(), tokVal, thumbData);
-
-          // Show success, then transition to post-save
-          successEl.textContent = 'YOU\'RE ON THE LIST. TRANSMISSIONS INCOMING.';
-          successEl.style.display = 'block';
-          submitBtn.style.display = 'none';
-          input.style.display = 'none';
-          if (skipBtn) skipBtn.style.display = 'none';
-
-          setTimeout(() => {
-            modal.style.display = 'none';
-            showPostSaveMessage();
-          }, 1800);
-
         } catch(err) {
-          // If Kit API fails, still register in Firebase and let them through
           console.warn('Kit subscription error:', err);
-          localStorage.setItem('panopticon_inmate_email', email);
-          const thumbData2 = localStorage.getItem('panopticon_avatar_thumb') || '';
-          const tokVal2 = localStorage.getItem('panopticon_inmate_tok') || idCode || '';
-          registerInFirebase(email, charName?.toUpperCase(), idCode?.toUpperCase(), tokVal2, thumbData2);
-          successEl.textContent = 'SIGNAL RECEIVED. YOU\'RE IN.';
-          successEl.style.display = 'block';
-          submitBtn.style.display = 'none';
-          input.style.display = 'none';
-          if (skipBtn) skipBtn.style.display = 'none';
+        }
 
-          setTimeout(() => {
-            modal.style.display = 'none';
-            showPostSaveMessage();
-          }, 1800);
+        localStorage.setItem('panopticon_inmate_email', email);
+        const thumbData = localStorage.getItem('panopticon_avatar_thumb') || '';
+        const tokVal = localStorage.getItem('panopticon_inmate_tok') || idCode || '';
+        registerInFirebase(email, charName?.toUpperCase(), idCode?.toUpperCase(), tokVal, thumbData);
+
+        // Image and address stored together, in one record.
+        saveAvatarRecord(built, email);
+
+        const emailed = await emailAvatar(email, built);
+
+        if (emailed) {
+          markSaveButtons('✓ SENT', false);
+          finish('ID TRANSMITTED. CHECK YOUR INBOX.');
+        } else {
+          // No mailer wired up yet, or the send failed at the table.
+          // Hand them the file rather than let them leave empty-handed.
+          downloadBuiltPng(built);
+          markSaveButtons('✓ SAVED', false);
+          finish('YOU\'RE ON THE LIST. ID SAVED TO THIS DEVICE.');
         }
       };
     }

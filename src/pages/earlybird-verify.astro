@@ -206,197 +206,31 @@ const CONFIG = {
   }
 };
 
-// ── DB LAYER ──
-let db = null;
-let useFirebase = false;
+// The DB layer that used to live here (findRegistration / updateRegistration)
+// was removed when the database was locked down — see earlybird.astro for the
+// reasoning. Pledge verification ran during the Issue 1 campaign, which closed
+// in June 2026, so this page is now a closed notice.
 
-function isFirebaseConfigured() {
-  return CONFIG.firebase.apiKey && CONFIG.firebase.apiKey.length > 5;
-}
-
-async function initDB() {
-  if (isFirebaseConfigured()) {
-    try {
-      const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js');
-      const { getFirestore, collection, addDoc, getDocs, query, where, updateDoc, doc, orderBy } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js');
-      const app = initializeApp(CONFIG.firebase);
-      db = {
-        firestore: getFirestore(app),
-        _m: { collection, addDoc, getDocs, query, where, updateDoc, doc, orderBy }
-      };
-      useFirebase = true;
-    } catch (e) {
-      useFirebase = false;
-    }
+(function init() {
+  // Campaign closed — hide the verification form and say so plainly, rather
+  // than leaving a form that can no longer do anything.
+  const step1 = document.getElementById('v-step1');
+  if (step1) {
+    step1.innerHTML = `
+      <div style="border: 2px solid rgb(92, 87, 111); background: rgb(23, 23, 33); padding: 32px; text-align: center;">
+        <div style="color: rgb(140, 64, 255); font-family: 'Orbitron'; font-size: 14px; letter-spacing: 3px; margin-bottom: 14px;">CAMPAIGN CLOSED</div>
+        <div style="color: rgb(214, 214, 224); font-family: 'Exo 2', sans-serif; font-size: 15px; line-height: 1.8;">
+          Pledge verification for Panopticon Issue 1 has ended and rewards are shipping.<br><br>
+          If something's missing from your order, email
+          <a href="mailto:hello@panopticoncomic.com" style="color: rgb(26, 224, 194);">hello@panopticoncomic.com</a>
+          and we'll sort it out.
+        </div>
+        <a href="/avatar" style="display: inline-block; margin-top: 26px; padding: 14px 28px; background: rgb(56, 140, 255); border: 2px solid rgb(56, 140, 255); color: rgb(10, 10, 15); font-family: 'Electrolize'; font-size: 14px; font-weight: bold; letter-spacing: 2px; text-decoration: none;">MAKE AN INMATE &rarr;</a>
+      </div>`;
   }
-}
-
-async function findRegistration(token, email) {
-  if (useFirebase) {
-    const { collection, getDocs, query, where } = db._m;
-    const q = query(
-      collection(db.firestore, 'earlybird_registrations'),
-      where('token', '==', token.toUpperCase()),
-      where('email', '==', email.toLowerCase())
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const d = snap.docs[0];
-    return { id: d.id, ...d.data() };
-  }
-  const data = JSON.parse(localStorage.getItem('eb_registrations') || '[]');
-  return data.find(r => r.token === token.toUpperCase() && r.email === email.toLowerCase()) || null;
-}
-
-async function updateRegistration(id, updates) {
-  if (useFirebase) {
-    const { doc, updateDoc } = db._m;
-    await updateDoc(doc(db.firestore, 'earlybird_registrations', id), updates);
-    return;
-  }
-  const data = JSON.parse(localStorage.getItem('eb_registrations') || '[]');
-  const idx = data.findIndex(r => r.id === id);
-  if (idx >= 0) {
-    Object.assign(data[idx], updates);
-    localStorage.setItem('eb_registrations', JSON.stringify(data));
-  }
-}
-
-// ── TIER DISPLAY ──
-const TIERS = {
-  gold:      { label: 'GOLD',      color: '#f59e0b' },
-  silver:    { label: 'SILVER',    color: '#94a3b8' },
-  bronze:    { label: 'BRONZE',    color: '#d97706' },
-  supporter: { label: 'SUPPORTER', color: '#1ae0c2' },
-};
-
-function tierHTML(tier) {
-  const t = TIERS[tier] || TIERS.supporter;
-  return `<span style="color:${t.color};">${t.label}</span>`;
-}
-
-function setStatus(msg, color = '#1ae0c2') {
   const dot = document.getElementById('v-status-dot');
   const text = document.getElementById('v-status-text');
-  if (dot) dot.style.backgroundColor = color;
-  if (text) { text.textContent = msg; text.style.color = color; }
-}
-
-// ── INIT ──
-let currentReg = null;
-
-(async function init() {
-  await initDB();
-
-  // Auto-fill from localStorage — prefer the avatar token, fall back to EB token
-  const savedToken = localStorage.getItem('panopticon_inmate_tok') || localStorage.getItem('panopticon_eb_token');
-  const savedEmail = localStorage.getItem('panopticon_eb_email');
-  if (savedToken) document.getElementById('v-token').value = savedToken;
-  if (savedEmail) document.getElementById('v-email').value = savedEmail;
-
-  // Lookup handler
-  document.getElementById('v-lookup-btn')?.addEventListener('click', async () => {
-    const token = document.getElementById('v-token').value.trim().toUpperCase();
-    const email = document.getElementById('v-email').value.trim().toLowerCase();
-    const errEl = document.getElementById('v-lookup-error');
-
-    if (!token || !email) {
-      errEl.textContent = '⊗ ENTER BOTH YOUR TOKEN AND EMAIL';
-      errEl.style.display = 'block';
-      return;
-    }
-    errEl.style.display = 'none';
-
-    const reg = await findRegistration(token, email);
-    if (!reg) {
-      errEl.textContent = '⊗ NO REGISTRATION FOUND. DOUBLE-CHECK YOUR TOKEN AND EMAIL.';
-      errEl.style.display = 'block';
-      return;
-    }
-
-    currentReg = reg;
-
-    if (reg.pledgeVerified) {
-      document.getElementById('v-step1').style.display = 'none';
-      document.getElementById('v-already').style.display = 'block';
-      setStatus('✓ PLEDGE ALREADY VERIFIED · LOTTERY ENTRY ACTIVE', '#1ae0c2');
-      return;
-    }
-
-    // Show step 2
-    document.getElementById('v-step1').style.display = 'none';
-    document.getElementById('v-step2').style.display = 'block';
-    setStatus('REGISTRATION LOCATED · ENTER BACKER INFO', '#388cff');
-
-    if (reg.avatarThumb) document.getElementById('v-avatar').src = reg.avatarThumb;
-    document.getElementById('v-name').textContent = reg.name || '—';
-    document.getElementById('v-reg-token').textContent = reg.token;
-    document.getElementById('v-tier-badge').innerHTML = tierHTML(reg.tier);
-  });
-
-  // Back button
-  document.getElementById('v-back-btn')?.addEventListener('click', () => {
-    document.getElementById('v-step1').style.display = 'block';
-    document.getElementById('v-step2').style.display = 'none';
-    setStatus('VERIFICATION SYSTEM ONLINE · AWAITING INPUT...', '#1ae0c2');
-  });
-
-  // Submit verification
-  document.getElementById('v-submit-btn')?.addEventListener('click', async () => {
-    if (!currentReg) return;
-
-    const backerName = document.getElementById('v-backer-name').value.trim();
-    const backerEmail = document.getElementById('v-backer-email').value.trim();
-    const pledgeAmount = document.getElementById('v-pledge-amount').value.trim();
-    const errEl = document.getElementById('v-submit-error');
-
-    if (!backerName || !backerEmail) {
-      errEl.textContent = '⊗ ENTER YOUR KICKSTARTER BACKER NAME AND EMAIL';
-      errEl.style.display = 'block';
-      return;
-    }
-    errEl.style.display = 'none';
-
-    // Handle screenshot
-    let screenshotData = '';
-    const screenshotFile = document.getElementById('v-screenshot')?.files?.[0];
-    if (screenshotFile) {
-      if (useFirebase) {
-        try {
-          const { getStorage, ref, uploadBytes, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js');
-          const storage = getStorage();
-          const storageRef = ref(storage, `screenshots/${currentReg.token}_${screenshotFile.name}`);
-          await uploadBytes(storageRef, screenshotFile);
-          screenshotData = await getDownloadURL(storageRef);
-        } catch (e) { console.warn('Screenshot upload failed:', e); }
-      } else {
-        screenshotData = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(screenshotFile);
-        });
-      }
-    }
-
-    const btn = document.getElementById('v-submit-btn');
-    btn.textContent = 'VERIFYING...';
-    btn.disabled = true;
-    btn.style.opacity = '0.5';
-
-    await updateRegistration(currentReg.id, {
-      pledgeVerified: true,
-      backerName,
-      backerEmail,
-      pledgeAmount,
-      screenshotUrl: screenshotData,
-      verifiedAt: new Date().toISOString(),
-      lotteryEligible: true,  // Verified = entered in lottery
-    });
-
-    // Show success
-    document.getElementById('v-step2').style.display = 'none';
-    document.getElementById('v-success').style.display = 'block';
-    setStatus('✓ PLEDGE VERIFIED · LOTTERY ENTRY CONFIRMED', '#8c40ff');
-  });
+  if (dot) dot.style.backgroundColor = '#5c576f';
+  if (text) { text.textContent = 'CAMPAIGN CLOSED'; text.style.color = '#5c576f'; }
 })();
 </script>

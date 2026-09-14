@@ -1,0 +1,54 @@
+rules_version = '2';
+
+// Panopticon website — Firestore security rules
+//
+// The shape: the public can CREATE records (the avatar creator needs that),
+// and nobody can read, list, change or delete them except a signed-in admin.
+//
+// Before this, every collection was world-readable — anyone could download
+// every registration, including email addresses, by querying the project
+// directly. The API key in the page source is public by design and is not
+// what protects the data; these rules are.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Signed in with a real Firebase Auth account = admin.
+    // There is exactly one such account and it is not in any source file.
+    function isAdmin() {
+      return request.auth != null;
+    }
+
+    // A registration a visitor is creating must look like a registration,
+    // must be their own new record, and must not arrive pre-verified.
+    function isNewRegistration() {
+      return request.resource.data.keys().hasAll(['email', 'registeredAt'])
+          && request.resource.data.email is string
+          && request.resource.data.email.size() > 3
+          && request.resource.data.email.size() < 254
+          && request.resource.data.get('pledgeVerified', false) == false
+          && request.resource.data.get('lotteryWinner', false) == false;
+    }
+
+    match /earlybird_registrations/{docId} {
+      allow create: if isNewRegistration();
+      allow read, list, update, delete: if isAdmin();
+    }
+
+    match /avatar_uploads/{docId} {
+      // Avatars are written once, at intake, and never edited from the page.
+      allow create: if request.resource.data.keys().hasAll(['imageData', 'uploadedAt'])
+                    && request.resource.data.imageData is string
+                    // Firestore's own hard limit is 1 MiB per document, so
+                    // cap below it — a PNG over this would be rejected anyway,
+                    // just with a less obvious error.
+                    && request.resource.data.imageData.size() < 900000;
+      allow read, list, update, delete: if isAdmin();
+    }
+
+    // Anything not named above is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
